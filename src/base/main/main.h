@@ -109,7 +109,7 @@ extern ABC_DLL void *          Abc_FrameReadManDsd2();
 extern ABC_DLL char *          Abc_FrameReadFlag( char * pFlag ); 
 extern ABC_DLL int             Abc_FrameIsFlagEnabled( char * pFlag );
 extern ABC_DLL int             Abc_FrameIsBatchMode();
-extern ABC_DLL int             Abc_FrameIsBridgeMode();
+//extern ABC_DLL int             Abc_FrameIsBridgeMode();
 extern ABC_DLL void            Abc_FrameSetBridgeMode();
 
 extern ABC_DLL int             Abc_FrameReadBmcFrames( Abc_Frame_t * p );              

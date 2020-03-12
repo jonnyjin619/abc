@@ -337,7 +337,8 @@ void If_ManComputeRequired( If_Man_t * p )
             }
             if ( Counter && !p->fReqTimeWarn )
             {
-                Abc_Print( 0, "Required times are exceeded at %d output%s. The earliest arrival times are used.\n", Counter, Counter > 1 ? "s":"" );
+                //Abc_Print( 0, "Required times are exceeded at %d output%s. The earliest arrival times are used.\n", Counter, Counter > 1 ? "s":"" );
+                Abc_Print( 1, "GAT-100 : To monitor required times at %d output%s.\n", Counter, Counter > 1 ? "s":"" );
                 p->fReqTimeWarn = 1;
             }
         }

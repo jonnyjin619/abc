@@ -1,22 +1,20 @@
 
-CC   := /usr/local/td-compile/bin/gcc
+CC   := gcc
 CXX  := g++
 LD   := $(CXX)
 
 MSG_PREFIX ?=
-ABCSRC = .
 
 $(info $(MSG_PREFIX)Using CC=$(CC))
 $(info $(MSG_PREFIX)Using CXX=$(CXX))
 $(info $(MSG_PREFIX)Using LD=$(LD))
 
 PROG := abcX64
-OS := $(shell uname -s)
 
 MODULES := \
 	$(wildcard src/ext*) \
 	src/base/abc src/base/abci src/base/cmd src/base/io src/base/main src/base/exor \
-	src/base/ver src/base/wlc src/base/wln src/base/acb src/base/bac src/base/cba src/base/pla src/base/test \
+	src/base/ver src/base/wlc src/base/acb src/base/bac src/base/cba src/base/pla src/base/test \
 	src/map/mapper src/map/mio src/map/super src/map/if \
 	src/map/amap src/map/cov src/map/scl src/map/mpm \
 	src/misc/extra src/misc/mvc src/misc/st src/misc/util src/misc/nm \
@@ -25,7 +23,7 @@ MODULES := \
 	src/opt/cut src/opt/fxu src/opt/fxch src/opt/rwr src/opt/mfs src/opt/sim \
 	src/opt/ret src/opt/fret src/opt/res src/opt/lpk src/opt/nwk src/opt/rwt \
 	src/opt/cgt src/opt/csw src/opt/dar src/opt/dau src/opt/dsc src/opt/sfm src/opt/sbd \
-	src/sat/bsat src/sat/xsat src/sat/satoko src/sat/csat src/sat/msat src/sat/psat src/sat/cnf src/sat/bmc src/sat/glucose \
+	src/sat/bsat src/sat/xsat src/sat/satoko src/sat/csat src/sat/msat src/sat/psat src/sat/cnf src/sat/bmc \
 	src/bool/bdc src/bool/deco src/bool/dec src/bool/kit src/bool/lucky \
 	src/bool/rsb src/bool/rpo \
 	src/proof/pdr src/proof/abs src/proof/live src/proof/ssc src/proof/int \
@@ -41,19 +39,13 @@ ARCHFLAGS_EXE ?= ./arch_flags
 $(ARCHFLAGS_EXE) : arch_flags.c
 	$(CC) arch_flags.c -o $(ARCHFLAGS_EXE)
 
-INCLUDES += -I$(ABCSRC)/src
+INCLUDES += -Isrc
 
-# Use C99 stdint.h header for platform-dependent types
-ifdef ABC_USE_STDINT_H
-    ARCHFLAGS ?= -DABC_USE_STDINT_H=1
-else
-    ARCHFLAGS ?= $(shell $(CC) $(ABCSRC)/arch_flags.c -o $(ARCHFLAGS_EXE) && $(ARCHFLAGS_EXE))
-endif
-
+ARCHFLAGS ?= $(shell $(CC) arch_flags.c -o $(ARCHFLAGS_EXE) && $(ARCHFLAGS_EXE))
 ARCHFLAGS := $(ARCHFLAGS)
 
-#OPTFLAGS  ?= -g 
-OPTFLAGS  ?= -O3
+OPTFLAGS  ?= -g 
+#OPTFLAGS  ?= -O3
 
 CFLAGS    += -Wall -Wno-unused-function -Wno-write-strings -Wno-sign-compare $(ARCHFLAGS)
 ifneq ($(findstring arm,$(shell uname -m)),)
@@ -81,10 +73,6 @@ ABC_READLINE_LIBRARIES ?= -lreadline
 ifndef ABC_USE_NO_READLINE
   CFLAGS += -DABC_USE_READLINE $(ABC_READLINE_INCLUDES)
   LIBS += $(ABC_READLINE_LIBRARIES)
-  ifeq ($(OS), FreeBSD)
-    CFLAGS += -I/usr/local/include
-    LDFLAGS += -L/usr/local/lib
-  endif
   $(info $(MSG_PREFIX)Using libreadline)
 endif
 
@@ -120,14 +108,9 @@ GCC_MINOR=$(word 2,$(subst .,$(space),$(GCC_VERSION)))
 
 $(info $(MSG_PREFIX)Found GCC_VERSION $(GCC_VERSION))
 ifeq ($(findstring $(GCC_MAJOR),0 1 2 3),)
-ifeq ($(GCC_MAJOR),4)
-$(info $(MSG_PREFIX)Found GCC_MAJOR==4)
+$(info $(MSG_PREFIX)Found GCC_MAJOR>=4)
 ifeq ($(findstring $(GCC_MINOR),0 1 2 3 4 5),)
 $(info $(MSG_PREFIX)Found GCC_MINOR>=6)
-CFLAGS += -Wno-unused-but-set-variable
-endif
-else
-$(info $(MSG_PREFIX)Found GCC_MAJOR>=5)
 CFLAGS += -Wno-unused-but-set-variable
 endif
 endif
@@ -135,19 +118,11 @@ endif
 endif
 
 # LIBS := -ldl -lrt
-LIBS += -lm
-ifneq ($(OS), FreeBSD)
-  LIBS += -ldl
-endif
-
+LIBS += -ldl -lm
 ifneq ($(findstring Darwin, $(shell uname)), Darwin)
    LIBS += -lrt
 endif
 
-ifdef ABC_USE_LIBSTDCXX
-   LIBS += -lstdc++
-   $(info $(MSG_PREFIX)Using explicit -lstdc++)
-endif
 
 $(info $(MSG_PREFIX)Using CFLAGS=$(CFLAGS))
 CXXFLAGS += $(CFLAGS)
@@ -157,7 +132,7 @@ GARBAGE := core core.* *.stackdump ./tags $(PROG) arch_flags
 
 .PHONY: all default tags clean docs cmake_info
 
-include $(patsubst %, $(ABCSRC)/%/module.make, $(MODULES))
+include $(patsubst %, %/module.make, $(MODULES))
 
 OBJ := \
 	$(patsubst %.cc, %.o, $(filter %.cc, $(SRC))) \
@@ -185,15 +160,15 @@ DEP := $(OBJ:.o=.d)
 
 %.d: %.c
 	@echo "$(MSG_PREFIX)\`\` Generating dependency:" $(LOCAL_PATH)/$<
-	$(VERBOSE)$(ABCSRC)/depends.sh $(CC) `dirname $*.c` $(OPTFLAGS) $(INCLUDES) $(CFLAGS) $< > $@
+	$(VERBOSE)./depends.sh $(CC) `dirname $*.c` $(OPTFLAGS) $(INCLUDES) $(CFLAGS) $*.c > $@
 
 %.d: %.cc
 	@echo "$(MSG_PREFIX)\`\` Generating dependency:" $(LOCAL_PATH)/$<
-	$(VERBOSE)$(ABCSRC)/depends.sh $(CXX) `dirname $*.cc` $(OPTFLAGS) $(INCLUDES) $(CXXFLAGS) $< > $@
+	$(VERBOSE)./depends.sh $(CXX) `dirname $*.cc` $(OPTFLAGS) $(INCLUDES) $(CXXFLAGS) $*.cc > $@
 
 %.d: %.cpp
 	@echo "$(MSG_PREFIX)\`\` Generating dependency:" $(LOCAL_PATH)/$<
-	$(VERBOSE)$(ABCSRC)/depends.sh $(CXX) `dirname $*.cpp` $(OPTFLAGS) $(INCLUDES) $(CXXFLAGS) $< > $@
+	$(VERBOSE)./depends.sh $(CXX) `dirname $*.cpp` $(OPTFLAGS) $(INCLUDES) $(CXXFLAGS) $*.cpp > $@
 
 ifndef ABC_MAKE_NO_DEPS
 -include $(DEP)
@@ -212,13 +187,13 @@ tags:
 
 $(PROG): $(OBJ)
 	@echo "$(MSG_PREFIX)\`\` Building binary:" $(notdir $@)
-	$(VERBOSE)$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(VERBOSE)$(LD) -o $@ $^ $(LIBS)
 
 lib$(PROG).a: $(LIBOBJ)
 	@echo "$(MSG_PREFIX)\`\` Linking:" $(notdir $@)
 	$(VERBOSE)ar rv $@ $?
 	$(VERBOSE)ranlib $@
-	cp lib$(PROG).a ../../../felib ; cp src/td/abcTDapis.h ../../../include/map
+	cp lib$(PROG).a ../../felib ; cp src/base/main/abcTDapis.h ../../include/map
   
 
 lib$(PROG).so: $(LIBOBJ)

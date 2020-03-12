@@ -101,6 +101,7 @@ void Cmd_HistoryAddCommand(    Abc_Frame_t * p, const char * command )
 ***********************************************************************/
 void Cmd_HistoryRead( Abc_Frame_t * p )
 {
+  if (0) {
 #if defined(WIN32) && defined(ABC_USE_HISTORY)
     char Buffer[ABC_MAX_STR];
     FILE * pFile;
@@ -117,6 +118,7 @@ void Cmd_HistoryRead( Abc_Frame_t * p )
     }
     fclose( pFile );
 #endif
+  }
 }
 
 /**Function*************************************************************
@@ -132,6 +134,7 @@ void Cmd_HistoryRead( Abc_Frame_t * p )
 ***********************************************************************/
 void Cmd_HistoryWrite( Abc_Frame_t * p, int Limit )
 {
+  if (0) {
 #if defined(WIN32) && defined(ABC_USE_HISTORY)
     FILE * pFile;
     char * pStr; 
@@ -147,6 +150,7 @@ void Cmd_HistoryWrite( Abc_Frame_t * p, int Limit )
         fprintf( pFile, "%s\n", pStr );
     fclose( pFile );
 #endif
+  }
 }
 
 /**Function*************************************************************

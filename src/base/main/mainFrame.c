@@ -300,7 +300,8 @@ void Abc_FrameClearVerifStatus( Abc_Frame_t * p )
 ***********************************************************************/
 int Abc_FrameShowProgress( Abc_Frame_t * p )
 {
-    return Abc_FrameIsFlagEnabled( "progressbar" );
+	//return Abc_FrameIsFlagEnabled( "progressbar" );
+	return 0;
 }
 
 

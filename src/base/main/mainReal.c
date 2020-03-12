@@ -44,7 +44,7 @@ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 ***********************************************************************/
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(NT64)
 #include <sys/time.h>    
 #include <sys/times.h>   
 #include <sys/resource.h>
@@ -132,7 +132,7 @@ int Abc_RealMain( int argc, char * argv[] )
                 break;                                          
 
             case 'm': {
-#ifndef WIN32                
+#if !defined(WIN32) && !defined(NT64)                
                 int maxMb = atoi(globalUtilOptarg);             
                 printf("Limiting memory use to %d MB\n", maxMb);
                 struct rlimit limit = {                         
@@ -144,7 +144,7 @@ int Abc_RealMain( int argc, char * argv[] )
                 break; 
             }                                         
             case 'l': {
-#ifndef WIN32
+#if !defined(WIN32) && !defined(NT64)
                 int maxTime = atoi(globalUtilOptarg);           
                 printf("Limiting time to %d seconds\n", maxTime);
                 struct rlimit limit = {                         
